@@ -95,13 +95,14 @@ def py_version(version):
     raise ValueError("Bundled Python version unknown for release `%s'"%version)
 
 def supported(filename):
-    return ('pypy' not in filename) and ('Windows' not in filename)
+    return ('pypy' not in filename) and ('Windows' not in filename) and (not filename.endswith('.pkg'))
 
 def add_version(release, distributions):
     tag_name = release['tag_name']
     download_urls = { f['name']: f['browser_download_url'] for f in release['assets'] }
     # can assume that sha files are named similar to release files so can also check supported(on their names)
-    shas = dict([download_sha(url) for (name, url) in download_urls.items() if name.endswith('.sha256') and supported(os.path.basename(name)) and tag_name in name])
+    shas = dict([download_sha(url) for (name, url) in download_urls.items()
+        if name.endswith('.sha256') and supported(os.path.splitext(name)[0]) and tag_name in name])
     specs = [create_spec(filename, sha, download_urls[filename]) for (filename, sha) in shas.items() if supported(filename)]
     
 
